@@ -9,7 +9,11 @@ const BOT_STATUS = process.env.BOT_STATUS;
 const TEMPERATURE = process.env.TEMPERATURE;
 
 const { Client, GatewayIntentBits } = require("discord.js");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const {
+  GoogleGenerativeAI,
+  HarmBlockThreshold,
+  HarmCategory,
+} = require("@google/generative-ai");
 
 const client = new Client({
   intents: [
@@ -18,6 +22,25 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
+
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+];
 
 //gemini stuff
 const genAI = new GoogleGenerativeAI(GEMINI_API);
@@ -30,6 +53,7 @@ const model = genAI.getGenerativeModel({
     //maxOutputTokens: 20,
     temperature: TEMPERATURE,
   },
+  safetySettings: safetySettings,
 });
 
 // Optionally specify existing chat history
