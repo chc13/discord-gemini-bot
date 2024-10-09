@@ -6,16 +6,20 @@ const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION;
 const MODEL = process.env.MODEL;
 const BOT_STATUS = process.env.BOT_STATUS;
 const TEMPERATURE = process.env.TEMPERATURE;
+const MESSAGE_SIZE = process.env.MESSAGE_SIZE;
+const SINGLE_REPLIES = process.env.SINGLE_REPLIES;
 
 //alternative to env
-/*const API_KEY = require("./apikey.js");
+/* const API_KEY = require("./apikey.js");
 const DISCORD_TOKEN = API_KEY.DISCORD_TOKEN;
 const CHANNEL_ID = API_KEY.CHANNEL_ID;
 const GEMINI_API = API_KEY.GEMINI_API;
 const SYSTEM_INSTRUCTION = API_KEY.SYSTEM_INSTRUCTION;
 const MODEL = API_KEY.MODEL;
 const BOT_STATUS = API_KEY.BOT_STATUS;
-const TEMPERATURE = API_KEY.TEMPERATURE; */
+const TEMPERATURE = API_KEY.TEMPERATURE;
+const MESSAGE_SIZE = API_KEY.MESSAGE_SIZE;
+const SINGLE_REPLIES = API_KEY.SINGLE_REPLIES; */
 
 const { Client, GatewayIntentBits } = require("discord.js");
 const {
@@ -120,7 +124,13 @@ client.on("messageCreate", async (msg) => {
       //const countResult = await model.countTokens("hi");
       //console.log(countResult.totalTokens);
 
-      //trimmedText = "Respond using less than 2000 characters. \n" + trimmedText;
+      if (Number(SINGLE_REPLIES) != 0)
+        trimmedText =
+          "Respond using less than " +
+          Number(MESSAGE_SIZE) +
+          " characters. \n" +
+          trimmedText;
+
       //const { response } = await model.generateContent(trimmedText);
       const generateResult = await model.generateContent(trimmedText);
       console.log(generateResult.response.usageMetadata);
@@ -137,7 +147,13 @@ client.on("messageCreate", async (msg) => {
       });
       console.log(countResult.totalTokens); // 10 */
 
-      //trimmedText = "Respond using less than 2000 characters. \n" + trimmedText;
+      if (Number(SINGLE_REPLIES) != 0)
+        trimmedText =
+          "Respond using less than " +
+          Number(MESSAGE_SIZE) +
+          " characters. \n" +
+          trimmedText;
+
       const result = await chat.sendMessage(trimmedText);
       console.log(result.response.usageMetadata);
       const response = await result.response;
@@ -147,18 +163,24 @@ client.on("messageCreate", async (msg) => {
       }); */
     }
     //splits response into separate 2000 character messages to avoid Discord limitations
-    let numMsg = responseTxt.length / 2000;
+    let numMsg = responseTxt.length / Number(MESSAGE_SIZE);
     numMsg = Math.ceil(numMsg);
 
     for (let i = 0; i < numMsg; i++) {
       if (i == numMsg - 1) {
-        await msg.reply(responseTxt.substring(i * 2000));
+        await msg.reply(responseTxt.substring(i * Number(MESSAGE_SIZE)));
       } else {
-        await msg.reply(responseTxt.substring(i * 2000, i * 2000 + 2000));
+        await msg.reply(
+          responseTxt.substring(
+            i * Number(MESSAGE_SIZE),
+            i * Number(MESSAGE_SIZE) + Number(MESSAGE_SIZE)
+          )
+        );
       }
     }
   } catch (error) {
     console.log(error);
+    //reset ai here?
   }
 });
 
