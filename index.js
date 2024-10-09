@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID;
 const GEMINI_API = process.env.GEMINI_API;
@@ -7,6 +6,16 @@ const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION;
 const MODEL = process.env.MODEL;
 const BOT_STATUS = process.env.BOT_STATUS;
 const TEMPERATURE = process.env.TEMPERATURE;
+
+//alternative to env
+/*const API_KEY = require("./apikey.js");
+const DISCORD_TOKEN = API_KEY.DISCORD_TOKEN;
+const CHANNEL_ID = API_KEY.CHANNEL_ID;
+const GEMINI_API = API_KEY.GEMINI_API;
+const SYSTEM_INSTRUCTION = API_KEY.SYSTEM_INSTRUCTION;
+const MODEL = API_KEY.MODEL;
+const BOT_STATUS = API_KEY.BOT_STATUS;
+const TEMPERATURE = API_KEY.TEMPERATURE; */
 
 const { Client, GatewayIntentBits } = require("discord.js");
 const {
@@ -23,6 +32,7 @@ const client = new Client({
   ],
 });
 
+//set to lowest harm categories to avoid soft crashes
 const safetySettings = [
   {
     category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -74,6 +84,8 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", async (msg) => {
+  //API_KEY.responses(msg);
+
   try {
     //terminate if the message is posted in an unspecified channel
     if (msg.channel.id !== CHANNEL_ID) return;
@@ -87,6 +99,7 @@ client.on("messageCreate", async (msg) => {
     let trimmedText = msg.content
       .replace(`<@${msg.mentions.users.first().id}>`, "")
       .trim();
+    let responseTxt;
 
     //ask for summary of the last x messages without using chat context
     if (trimmedText === "!summary" || trimmedText === "!summarize") {
@@ -102,21 +115,34 @@ client.on("messageCreate", async (msg) => {
         );
 
       trimmedText = chatlog;
-      //TODO: content[BASE_TYPE_MAX_LENGTH]: Must be 2000 or fewer in length.
-      trimmedText = "Respond using less than 2000 characters. \n" + trimmedText;
+
+      //trimmedText = "Respond using less than 2000 characters. \n" + trimmedText;
       const { response } = await model.generateContent(trimmedText);
-      await msg.reply({
+      responseTxt = response.text();
+      /* await msg.reply({
         content: response.text(),
-      });
+      }); */
     } else {
       //respond as a chat conversation
-      //TODO: content[BASE_TYPE_MAX_LENGTH]: Must be 2000 or fewer in length.
-      trimmedText = "Respond using less than 2000 characters. \n" + trimmedText;
+
+      //trimmedText = "Respond using less than 2000 characters. \n" + trimmedText;
       const result = await chat.sendMessage(trimmedText);
       const response = await result.response;
-      await msg.reply({
+      responseTxt = response.text();
+      /* await msg.reply({
         content: response.text(),
-      });
+      }); */
+    }
+    //splits response into separate 2000 character messages to avoid Discord limitations
+    let numMsg = responseTxt.length / 2000;
+    numMsg = Math.ceil(numMsg);
+
+    for (let i = 0; i < numMsg; i++) {
+      if (i == numMsg - 1) {
+        await msg.reply(responseTxt.substring(i * 2000));
+      } else {
+        await msg.reply(responseTxt.substring(i * 2000, i * 2000 + 2000));
+      }
     }
   } catch (error) {
     console.log(error);
