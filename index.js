@@ -116,17 +116,30 @@ client.on("messageCreate", async (msg) => {
 
       trimmedText = chatlog;
 
+      // Count tokens in a prompt without calling text generation.
+      //const countResult = await model.countTokens("hi");
+      //console.log(countResult.totalTokens);
+
       //trimmedText = "Respond using less than 2000 characters. \n" + trimmedText;
-      const { response } = await model.generateContent(trimmedText);
-      responseTxt = response.text();
+      //const { response } = await model.generateContent(trimmedText);
+      const generateResult = await model.generateContent(trimmedText);
+      console.log(generateResult.response.usageMetadata);
+      //responseTxt = response.text();
+      responseTxt = generateResult.response.text();
       /* await msg.reply({
         content: response.text(),
       }); */
     } else {
       //respond as a chat conversation
 
+      /*     const countResult = await model.countTokens({
+        generateContentRequest: { contents: await chat.getHistory() },
+      });
+      console.log(countResult.totalTokens); // 10 */
+
       //trimmedText = "Respond using less than 2000 characters. \n" + trimmedText;
       const result = await chat.sendMessage(trimmedText);
+      console.log(result.response.usageMetadata);
       const response = await result.response;
       responseTxt = response.text();
       /* await msg.reply({
