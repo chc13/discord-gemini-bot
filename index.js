@@ -1,6 +1,9 @@
 require("dotenv").config();
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+const CHANNEL_LOCK = process.env.CHANNEL_LOCK;
 const CHANNEL_ID = process.env.CHANNEL_ID;
+const SERVER_LOCK = process.env.SERVER_LOCK;
+const SERVER_ID = process.env.SERVER_ID;
 const GEMINI_API = process.env.GEMINI_API;
 const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION;
 const MODEL = process.env.MODEL;
@@ -15,7 +18,10 @@ const REQUESTS_PER_DAY = process.env.REQUESTS_PER_DAY;
 //alternative to env
 /* const API_KEY = require("./apikey.js");
 const DISCORD_TOKEN = API_KEY.DISCORD_TOKEN;
+const CHANNEL_LOCK = API_KEY.CHANNEL_LOCK;
 const CHANNEL_ID = API_KEY.CHANNEL_ID;
+const SERVER_LOCK = API_KEY.SERVER_LOCK;
+const SERVER_ID = API_KEY.SERVER_ID;
 const GEMINI_API = API_KEY.GEMINI_API;
 const SYSTEM_INSTRUCTION = API_KEY.SYSTEM_INSTRUCTION;
 const MODEL = API_KEY.MODEL;
@@ -50,7 +56,7 @@ const client = new Client({
   ],
 });
 
-//set to lowest harm categories to avoid soft crashes
+//set to lowest harm categories to avoid API errors
 const safetySettings = [
   {
     category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -106,7 +112,9 @@ client.on("messageCreate", async (msg) => {
 
   try {
     //terminate if the message is posted in an unspecified channel
-    if (msg.channel.id !== CHANNEL_ID) return;
+    if (Number(CHANNEL_LOCK) && msg.channel.id !== CHANNEL_ID) return;
+    //terminate if the message is posted in an unspecified server
+    if (Number(SERVER_LOCK) && msg.guild.id !== SERVER_ID) return;
     //terminate if the author of the message is a bot
     if (msg.author.bot) return;
     //terminate if the bot is not being mentioned
@@ -123,10 +131,7 @@ client.on("messageCreate", async (msg) => {
       console.log("requests exceed RPD");
       return;
     }
-    if (
-      tpmCount >=
-      Number(TOKENS_PER_MINUTE) - Math.floor(Number(TOKENS_PER_MINUTE) / 10)
-    ) {
+    if (tpmCount >= Number(TOKENS_PER_MINUTE)) {
       console.log("tokens exceed TPM");
       return;
     }
@@ -215,7 +220,7 @@ client.on("messageCreate", async (msg) => {
         content: response.text(),
       }); */
     }
-    //splits response into separate 2000 character messages to avoid Discord limitations
+    //splits response into separate messages to avoid Discord limitations
     let numMsg = responseTxt.length / Number(MESSAGE_SIZE);
     numMsg = Math.ceil(numMsg);
 
