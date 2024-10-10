@@ -111,7 +111,7 @@ client.on("messageCreate", async (msg) => {
     if (msg.author.bot) return;
     //terminate if the bot is not being mentioned
     if (!msg.mentions.has(client.user)) return;
-    //terminate if the bot is mentioned at the beginning of the message
+    //terminate if the bot is not mentioned at the beginning of the message
     if (!msg.content.startsWith(`<@${client.user.id}>`)) return;
 
     //check cooldowns
@@ -123,7 +123,10 @@ client.on("messageCreate", async (msg) => {
       console.log("requests exceed RPD");
       return;
     }
-    if (tpmCount >= Number(TOKENS_PER_MINUTE) - 10000) {
+    if (
+      tpmCount >=
+      Number(TOKENS_PER_MINUTE) - Math.floor(Number(TOKENS_PER_MINUTE) / 10)
+    ) {
       console.log("tokens exceed TPM");
       return;
     }
