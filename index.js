@@ -8,6 +8,7 @@ const GEMINI_API = process.env.GEMINI_API;
 const SYSTEM_INSTRUCTION = process.env.SYSTEM_INSTRUCTION;
 const MODEL = process.env.MODEL;
 const BOT_STATUS = process.env.BOT_STATUS;
+const BOT_ACTIVITY = process.env.BOT_ACTIVITY;
 const TEMPERATURE = process.env.TEMPERATURE;
 const MESSAGE_SIZE = process.env.MESSAGE_SIZE;
 const SINGLE_REPLIES = process.env.SINGLE_REPLIES;
@@ -26,6 +27,7 @@ const GEMINI_API = API_KEY.GEMINI_API;
 const SYSTEM_INSTRUCTION = API_KEY.SYSTEM_INSTRUCTION;
 const MODEL = API_KEY.MODEL;
 const BOT_STATUS = API_KEY.BOT_STATUS;
+const BOT_ACTIVITY = API_KEY.BOT_ACTIVITY;
 const TEMPERATURE = API_KEY.TEMPERATURE;
 const MESSAGE_SIZE = API_KEY.MESSAGE_SIZE;
 const SINGLE_REPLIES = API_KEY.SINGLE_REPLIES;
@@ -41,7 +43,7 @@ let rpmDate = 0;
 let rpdDate = 0;
 let tpmDate = 0;
 
-const { Client, GatewayIntentBits } = require("discord.js");
+const { Client, GatewayIntentBits, ActivityType } = require("discord.js");
 const {
   GoogleGenerativeAI,
   HarmBlockThreshold,
@@ -104,6 +106,13 @@ client.on("ready", () => {
 
   client.user.setPresence({
     status: BOT_STATUS, // You can also use 'idle', 'dnd', or 'invisible'
+    activities: [
+      {
+        type: ActivityType.Custom,
+        name: "customname",
+        state: BOT_ACTIVITY,
+      },
+    ],
   });
 });
 
@@ -197,7 +206,7 @@ client.on("messageCreate", async (msg) => {
     } else {
       //respond as a chat conversation
 
-      /*     const countResult = await model.countTokens({
+      /* const countResult = await model.countTokens({
         generateContentRequest: { contents: await chat.getHistory() },
       });
       console.log(countResult.totalTokens); // 10 */
