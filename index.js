@@ -8,6 +8,9 @@ const BOT_STATUS = process.env.BOT_STATUS;
 const TEMPERATURE = process.env.TEMPERATURE;
 const MESSAGE_SIZE = process.env.MESSAGE_SIZE;
 const SINGLE_REPLIES = process.env.SINGLE_REPLIES;
+const REQUESTS_PER_MINUTE = process.env.REQUESTS_PER_MINUTE;
+const TOKENS_PER_MINUTE = process.env.TOKENS_PER_MINUTE;
+const REQUESTS_PER_DAY = process.env.REQUESTS_PER_DAY;
 
 //alternative to env
 /* const API_KEY = require("./apikey.js");
@@ -19,7 +22,18 @@ const MODEL = API_KEY.MODEL;
 const BOT_STATUS = API_KEY.BOT_STATUS;
 const TEMPERATURE = API_KEY.TEMPERATURE;
 const MESSAGE_SIZE = API_KEY.MESSAGE_SIZE;
-const SINGLE_REPLIES = API_KEY.SINGLE_REPLIES; */
+const SINGLE_REPLIES = API_KEY.SINGLE_REPLIES;
+const REQUESTS_PER_MINUTE = API_KEY.REQUESTS_PER_MINUTE;
+const TOKENS_PER_MINUTE = API_KEY.TOKENS_PER_MINUTE;
+const REQUESTS_PER_DAY = API_KEY.REQUESTS_PER_DAY; */
+
+//cooldown variables
+let rpmCount = 0;
+let rpdCount = 0;
+let tpmCount = 0;
+let rpmDate = 0;
+let rpdDate = 0;
+let tpmDate = 0;
 
 const { Client, GatewayIntentBits } = require("discord.js");
 const {
@@ -100,6 +114,36 @@ client.on("messageCreate", async (msg) => {
     //terminate if the bot is mentioned at the beginning of the message
     if (!msg.content.startsWith(`<@${client.user.id}>`)) return;
 
+    //check cooldowns
+    if (rpmCount >= Number(REQUESTS_PER_MINUTE)) {
+      console.log("requests exceed RPM");
+      return;
+    }
+    if (rpdCount >= Number(REQUESTS_PER_DAY)) {
+      console.log("requests exceed RPD");
+      return;
+    }
+    if (tpmCount >= Number(TOKENS_PER_MINUTE) - 10000) {
+      console.log("tokens exceed TPM");
+      return;
+    }
+
+    if (Date.now() - rpmDate >= 60000) {
+      rpmDate = Date.now();
+      console.log("resetting RPM date", rpmDate);
+      rpmCount = 0;
+    }
+    if (Date.now() - rpdDate >= 86400000) {
+      rpdDate = Date.now();
+      console.log("resetting RPD date", rpdDate);
+      rpdCount = 0;
+    }
+    if (Date.now() - tpmDate >= 60000) {
+      tpmDate = Date.now();
+      console.log("resetting TPM date", tpmDate);
+      tpmCount = 0;
+    }
+
     let trimmedText = msg.content
       .replace(`<@${msg.mentions.users.first().id}>`, "")
       .trim();
@@ -133,7 +177,10 @@ client.on("messageCreate", async (msg) => {
 
       //const { response } = await model.generateContent(trimmedText);
       const generateResult = await model.generateContent(trimmedText);
+
       console.log(generateResult.response.usageMetadata);
+      tpmCount += generateResult.response.usageMetadata.totalTokenCount;
+
       //responseTxt = response.text();
       responseTxt = generateResult.response.text();
       /* await msg.reply({
@@ -155,7 +202,10 @@ client.on("messageCreate", async (msg) => {
           trimmedText;
 
       const result = await chat.sendMessage(trimmedText);
+
       console.log(result.response.usageMetadata);
+      tpmCount += result.response.usageMetadata.totalTokenCount;
+
       const response = await result.response;
       responseTxt = response.text();
       /* await msg.reply({
@@ -178,6 +228,12 @@ client.on("messageCreate", async (msg) => {
         );
       }
     }
+
+    rpmCount++;
+    rpdCount++;
+    console.log("RPM Count", rpmCount);
+    console.log("RPD Count", rpdCount);
+    console.log("TPM Count", tpmCount);
   } catch (error) {
     console.log(error);
     //reset ai here?
