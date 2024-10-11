@@ -1,4 +1,5 @@
 require("dotenv").config();
+const ADMIN_ID = process.env.ADMIN_ID;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const CHANNEL_LOCK = process.env.CHANNEL_LOCK;
 const CHANNEL_ID = process.env.CHANNEL_ID;
@@ -18,6 +19,7 @@ const REQUESTS_PER_DAY = process.env.REQUESTS_PER_DAY;
 
 //alternative to env
 /* const API_KEY = require("./apikey.js");
+const ADMIN_ID = API_KEY.ADMIN_ID;
 const DISCORD_TOKEN = API_KEY.DISCORD_TOKEN;
 const CHANNEL_LOCK = API_KEY.CHANNEL_LOCK;
 const CHANNEL_ID = API_KEY.CHANNEL_ID;
@@ -99,7 +101,7 @@ const model = genAI.getGenerativeModel({
 ] */
 
 // Initialize the chat with optional chat history
-const chat = model.startChat();
+let chat = model.startChat();
 
 client.on("ready", () => {
   console.log("Logged in as " + client.user.tag);
@@ -136,23 +138,65 @@ client.on("messageCreate", async (msg) => {
       .trim();
     let responseTxt;
 
-    if (trimmedText === "!token" || trimmedText === "!tokens") {
-      await msg.reply(
-        "RPM Count " +
-          rpmCount +
-          "\n" +
-          "RPD Count " +
-          rpdCount +
-          "\n" +
-          "TPM Count " +
-          tpmCount
-      );
+    if (msg.author.id == ADMIN_ID) {
+      //command to check quota cooldowns
+      if (trimmedText === "!quota") {
+        await msg.reply(
+          "RPM: " +
+            rpmCount +
+            "/" +
+            REQUESTS_PER_MINUTE +
+            "\n" +
+            "RPD: " +
+            rpdCount +
+            "/" +
+            REQUESTS_PER_DAY +
+            "\n" +
+            "TPM: " +
+            tpmCount +
+            "/" +
+            TOKENS_PER_MINUTE
+        );
+        return;
+      }
 
-      return;
+      //restarts the chat session
+      if (trimmedText === "!restart") {
+        /* console.log("Restarting Discord bot...");
+        console.log("Restarting client...");
+        client.destroy().then(() => {
+          client.login(DISCORD_TOKEN);
+          console.log("Client restart successful.");
+        }); */
+        console.log("Restarting Chat Session...");
+        await msg.reply("Restarting Chat Session...");
+        chat = model.startChat();
+        return;
+      }
+
+      //shuts down the discord bot
+      if (trimmedText === "!shutdown") {
+        console.log("Shutting down...");
+        await msg.reply("Shutting down...");
+        client.destroy();
+        return;
+      }
+
+      //bot uptime in ms
+      if (trimmedText === "!uptime") {
+        let days = Math.floor(client.uptime / 86400000);
+        let hours = Math.floor(client.uptime / 3600000) % 24;
+        let minutes = Math.floor(client.uptime / 60000) % 60;
+        let seconds = Math.floor(client.uptime / 1000) % 60;
+        await msg.reply(
+          `__Uptime:__\n${days}d ${hours}h ${minutes}m ${seconds}s`
+        );
+        return;
+      }
     }
 
+    //checks quota limits and cancels operation if theyre over the set limits
     if (rpmCount >= Number(REQUESTS_PER_MINUTE)) {
-      //check cooldowns
       console.log("requests exceed RPM");
       return;
     }
