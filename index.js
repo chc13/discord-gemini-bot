@@ -131,8 +131,28 @@ client.on("messageCreate", async (msg) => {
     //terminate if the bot is not mentioned at the beginning of the message
     if (!msg.content.startsWith(`<@${client.user.id}>`)) return;
 
-    //check cooldowns
+    let trimmedText = msg.content
+      .replace(`<@${msg.mentions.users.first().id}>`, "")
+      .trim();
+    let responseTxt;
+
+    if (trimmedText === "!token" || trimmedText === "!tokens") {
+      await msg.reply(
+        "RPM Count " +
+          rpmCount +
+          "\n" +
+          "RPD Count " +
+          rpdCount +
+          "\n" +
+          "TPM Count " +
+          tpmCount
+      );
+
+      return;
+    }
+
     if (rpmCount >= Number(REQUESTS_PER_MINUTE)) {
+      //check cooldowns
       console.log("requests exceed RPM");
       return;
     }
@@ -160,11 +180,6 @@ client.on("messageCreate", async (msg) => {
       console.log("resetting TPM date", tpmDate);
       tpmCount = 0;
     }
-
-    let trimmedText = msg.content
-      .replace(`<@${msg.mentions.users.first().id}>`, "")
-      .trim();
-    let responseTxt;
 
     //ask for summary of the last x messages without using chat context
     if (trimmedText === "!summary" || trimmedText === "!summarize") {
