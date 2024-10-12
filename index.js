@@ -214,14 +214,17 @@ client.on("messageCreate", async (msg) => {
     //checks quota limits and cancels operation if theyre over the set limits
     if (rpmCount >= Number(REQUESTS_PER_MINUTE)) {
       console.log("requests exceed RPM");
+      await msg.reply("CAUTION: Requests exceed RPM.");
       return;
     }
     if (rpdCount >= Number(REQUESTS_PER_DAY)) {
       console.log("requests exceed RPD");
+      await msg.reply("CAUTION: Requests exceed RPD.");
       return;
     }
     if (tpmCount >= Number(TOKENS_PER_MINUTE)) {
       console.log("tokens exceed TPM");
+      await msg.reply("CAUTION: Token usage exceed TPM.");
       return;
     }
 
