@@ -138,6 +138,22 @@ client.on("messageCreate", async (msg) => {
       .trim();
     let responseTxt;
 
+    if (Date.now() - rpmDate >= 60000) {
+      rpmDate = Date.now();
+      console.log("resetting RPM date", rpmDate);
+      rpmCount = 0;
+    }
+    if (Date.now() - rpdDate >= 86400000) {
+      rpdDate = Date.now();
+      console.log("resetting RPD date", rpdDate);
+      rpdCount = 0;
+    }
+    if (Date.now() - tpmDate >= 60000) {
+      tpmDate = Date.now();
+      console.log("resetting TPM date", tpmDate);
+      tpmCount = 0;
+    }
+
     if (msg.author.id == ADMIN_ID) {
       //command to check quota cooldowns
       if (trimmedText === "!quota") {
@@ -207,22 +223,6 @@ client.on("messageCreate", async (msg) => {
     if (tpmCount >= Number(TOKENS_PER_MINUTE)) {
       console.log("tokens exceed TPM");
       return;
-    }
-
-    if (Date.now() - rpmDate >= 60000) {
-      rpmDate = Date.now();
-      console.log("resetting RPM date", rpmDate);
-      rpmCount = 0;
-    }
-    if (Date.now() - rpdDate >= 86400000) {
-      rpdDate = Date.now();
-      console.log("resetting RPD date", rpdDate);
-      rpdCount = 0;
-    }
-    if (Date.now() - tpmDate >= 60000) {
-      tpmDate = Date.now();
-      console.log("resetting TPM date", tpmDate);
-      tpmCount = 0;
     }
 
     //ask for summary of the last x messages without using chat context
