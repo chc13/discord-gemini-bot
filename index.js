@@ -136,7 +136,7 @@ client.on("messageCreate", async (msg) => {
     let trimmedText = msg.content
       .replace(`<@${msg.mentions.users.first().id}>`, "")
       .trim();
-    let responseTxt;
+    let responseTxt = "";
 
     if (Date.now() - rpmDate >= 60000) {
       rpmDate = Date.now();
