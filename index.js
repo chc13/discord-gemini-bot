@@ -228,6 +228,9 @@ client.on("messageCreate", async (msg) => {
       return;
     }
 
+    rpmCount++;
+    rpdCount++;
+
     //ask for summary of the last x messages without using chat context
     if (trimmedText === "!summary" || trimmedText === "!summarize") {
       const fetchedMessages = await msg.channel.messages.fetch({
@@ -308,8 +311,6 @@ client.on("messageCreate", async (msg) => {
       }
     }
 
-    rpmCount++;
-    rpdCount++;
     console.log("RPM Count", rpmCount);
     console.log("RPD Count", rpdCount);
     console.log("TPM Count", tpmCount);
