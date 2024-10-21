@@ -37,6 +37,14 @@ const REQUESTS_PER_MINUTE = API_KEY.REQUESTS_PER_MINUTE;
 const TOKENS_PER_MINUTE = API_KEY.TOKENS_PER_MINUTE;
 const REQUESTS_PER_DAY = API_KEY.REQUESTS_PER_DAY; */
 
+//check to see if required API keys are there
+if (DISCORD_TOKEN == "" || DISCORD_TOKEN == null) {
+  console.log("WARNING: MISSING DISCORD TOKEN KEY");
+}
+if (GEMINI_API == "" || GEMINI_API == null) {
+  console.log("WARNING: MISSING GEMINI API KEY");
+}
+
 //cooldown variables
 let rpmCount = 0;
 let rpdCount = 0;
@@ -316,7 +324,6 @@ client.on("messageCreate", async (msg) => {
     console.log("TPM Count", tpmCount);
   } catch (error) {
     console.log(error);
-    //reset ai here?
   }
 });
 
