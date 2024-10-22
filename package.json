@@ -14,7 +14,8 @@
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "discord.js": "^14.16.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "nodemon": "^3.1.7"
   },
   "bin": "index.js",
   "pkg": {
