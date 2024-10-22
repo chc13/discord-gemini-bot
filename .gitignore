@@ -3,3 +3,5 @@ node_modules
 apikey.js
 dist
 TODO
+encryptedData.json
+nodemon.json
