@@ -18,6 +18,18 @@ const SINGLE_REPLIES = process.env.SINGLE_REPLIES;
 const REQUESTS_PER_MINUTE = process.env.REQUESTS_PER_MINUTE;
 const TOKENS_PER_MINUTE = process.env.TOKENS_PER_MINUTE;
 const REQUESTS_PER_DAY = process.env.REQUESTS_PER_DAY;
+const AUTOSAVE_CHAT = process.env.AUTOSAVE_CHAT;
+const AUTOLOAD_CHAT = process.env.AUTOLOAD_CHAT;
+
+/* console.log(AUTOLOAD_CHAT);
+if (AUTOLOAD_CHAT == null || AUTOLOAD_CHAT == "") {
+  console.log("hi");
+}
+if ("AUTOLOAD_CHAT" in process.env) {
+  console.log("it is set");
+} else {
+  console.log("it isnt set");
+} */
 
 //alternative to env
 /* const API_KEY = require("./apikey.js");
@@ -105,23 +117,24 @@ const model = genAI.getGenerativeModel({
 });
 
 // Optionally specify existing chat history
-/* let history = [
-  ModelContent(role: "user", parts: "Hello, I have 2 dogs in my house."),
-  ModelContent(role: "model", parts: "Great to meet you. What would you like to know?"),
-] */
 /* let chatHistory = [
   { role: "user", parts: [{ text: "I have 3 dogs" }] },
   { role: "model", parts: [{ text: "Okay." }] },
 ]; */
-let saveChatHistory = 1;
-let loadChatHistory = 1;
+
 let chatHistory = [];
 
-if (loadChatHistory) {
+if (Number(AUTOLOAD_CHAT)) {
+  console.log("Loading chat history...");
   chatHistory = readwriteJson.readJSONFile("chatHistory.json")["history"];
+  //what happens if that file doesnt exist?
+  //console.log(chatHistory);
+  if (chatHistory == undefined) {
+    console.log("Chat history unavailable to be loaded.");
+    chatHistory = [];
+  }
+  //console.log(chatHistory);
 }
-
-//chatHistory = [...chatHistory, "bogos binted?"];
 
 // Initialize the chat with optional chat history
 let chat = model.startChat({ history: chatHistory });
@@ -209,6 +222,7 @@ client.on("messageCreate", async (msg) => {
         }); */
         console.log("Restarting Chat Session...");
         await msg.reply("Restarting Chat Session...");
+        chatHistory = [];
         chat = model.startChat();
         return;
       }
@@ -230,6 +244,32 @@ client.on("messageCreate", async (msg) => {
         await msg.reply(
           `__Uptime:__\n${days}d ${hours}h ${minutes}m ${seconds}s`
         );
+        return;
+      }
+
+      //manually saves chat history to a json file
+      if (trimmedText === "!save") {
+        console.log("Updating chat history file...");
+        await msg.reply("Updating chat history file...");
+        readwriteJson.writeJSONFile("chatHistory.json", {
+          history: chatHistory,
+        });
+        return;
+      }
+
+      //manually loads chat history from json file
+      if (trimmedText === "!load") {
+        console.log("Loading chat history...");
+        await msg.reply("Loading chat history...");
+        let temp = readwriteJson.readJSONFile("chatHistory.json")["history"];
+
+        if (temp == undefined) {
+          console.log("Chat history unavailable to be loaded.");
+          await msg.reply("Chat history unavailable to be loaded.");
+        } else {
+          chatHistory = temp;
+          chat = model.startChat({ history: chatHistory });
+        }
         return;
       }
     }
@@ -330,7 +370,12 @@ client.on("messageCreate", async (msg) => {
         { role: "model", parts: [{ text: responseTxt }] },
       ];
 
-      readwriteJson.writeJSONFile("chatHistory.json", { history: chatHistory });
+      if (Number(AUTOSAVE_CHAT)) {
+        console.log("Updating chat history file...");
+        readwriteJson.writeJSONFile("chatHistory.json", {
+          history: chatHistory,
+        });
+      }
     }
     //splits response into separate messages to avoid Discord limitations
     let numMsg = responseTxt.length / Number(MESSAGE_SIZE);
