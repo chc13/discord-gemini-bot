@@ -1,3 +1,5 @@
+const readwriteJson = require("./readwriteJson.js");
+
 require("dotenv").config();
 const ADMIN_ID = process.env.ADMIN_ID;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
@@ -107,9 +109,22 @@ const model = genAI.getGenerativeModel({
   ModelContent(role: "user", parts: "Hello, I have 2 dogs in my house."),
   ModelContent(role: "model", parts: "Great to meet you. What would you like to know?"),
 ] */
+/* let chatHistory = [
+  { role: "user", parts: [{ text: "I have 3 dogs" }] },
+  { role: "model", parts: [{ text: "Okay." }] },
+]; */
+let saveChatHistory = 1;
+let loadChatHistory = 1;
+let chatHistory = [];
+
+if (loadChatHistory) {
+  chatHistory = readwriteJson.readJSONFile("chatHistory.json")["history"];
+}
+
+//chatHistory = [...chatHistory, "bogos binted?"];
 
 // Initialize the chat with optional chat history
-let chat = model.startChat();
+let chat = model.startChat({ history: chatHistory });
 
 client.on("ready", () => {
   console.log("Logged in as " + client.user.tag);
@@ -284,6 +299,13 @@ client.on("messageCreate", async (msg) => {
       });
       console.log(countResult.totalTokens); // 10 */
 
+      //add to history
+      //{ role: "user", parts: [{ text: "I have 3 dogs" }] }
+      chatHistory = [
+        ...chatHistory,
+        { role: "user", parts: [{ text: trimmedText }] },
+      ];
+
       if (Number(SINGLE_REPLIES) != 0)
         trimmedText =
           "Respond using less than " +
@@ -298,9 +320,17 @@ client.on("messageCreate", async (msg) => {
 
       const response = await result.response;
       responseTxt = response.text();
+
       /* await msg.reply({
         content: response.text(),
       }); */
+
+      chatHistory = [
+        ...chatHistory,
+        { role: "model", parts: [{ text: responseTxt }] },
+      ];
+
+      readwriteJson.writeJSONFile("chatHistory.json", { history: chatHistory });
     }
     //splits response into separate messages to avoid Discord limitations
     let numMsg = responseTxt.length / Number(MESSAGE_SIZE);
