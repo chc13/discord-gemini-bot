@@ -49,7 +49,9 @@ const MESSAGE_SIZE = API_KEY.MESSAGE_SIZE;
 const SINGLE_REPLIES = API_KEY.SINGLE_REPLIES;
 const REQUESTS_PER_MINUTE = API_KEY.REQUESTS_PER_MINUTE;
 const TOKENS_PER_MINUTE = API_KEY.TOKENS_PER_MINUTE;
-const REQUESTS_PER_DAY = API_KEY.REQUESTS_PER_DAY; */
+const REQUESTS_PER_DAY = API_KEY.REQUESTS_PER_DAY;
+const AUTOSAVE_CHAT = API_KEY.AUTOSAVE_CHAT;
+const AUTOLOAD_CHAT = API_KEY.AUTOLOAD_CHAT; */
 
 //check to see if required API keys are there
 if (DISCORD_TOKEN == "" || DISCORD_TOKEN == null) {
@@ -213,15 +215,15 @@ client.on("messageCreate", async (msg) => {
       }
 
       //restarts the chat session
-      if (trimmedText === "!restart") {
+      if (trimmedText === "!reset") {
         /* console.log("Restarting Discord bot...");
         console.log("Restarting client...");
         client.destroy().then(() => {
           client.login(DISCORD_TOKEN);
           console.log("Client restart successful.");
         }); */
-        console.log("Restarting Chat Session...");
-        await msg.reply("Restarting Chat Session...");
+        console.log("Resetting Chat Session...");
+        await msg.reply("Resetting Chat Session...");
         chatHistory = [];
         chat = model.startChat();
         return;

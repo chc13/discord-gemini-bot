@@ -61,7 +61,7 @@ AUTOLOAD_CHAT=1
 
 `@mention !quota` to display current quota cooldowns.
 
-`@mention !restart` to restart a new instance of the Gemini AI chat session.
+`@mention !reset` to reset to a new instance of the Gemini AI chat session.
 
 `@mention !shutdown` to shut down the bot.
 
