@@ -67,6 +67,10 @@ AUTOLOAD_CHAT=1
 
 `@mention !uptime` to display current uptime.
 
+`@mention !save` to manually save chat history to json file.
+
+`@mention !load` to manually load the chat history json file.
+
 ## Dependencies
 
 This program uses the following npm packages:
