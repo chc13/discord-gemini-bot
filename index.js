@@ -141,6 +141,18 @@ if (Number(AUTOLOAD_CHAT)) {
 // Initialize the chat with optional chat history
 let chat = model.startChat({ history: chatHistory });
 
+// Count the tokens used by loading in chat history
+const countHistoryTokens = async () => {
+  let count = await model.countTokens({
+    generateContentRequest: { contents: await chat.getHistory() },
+  });
+  console.log("Total tokens used by chat history:", count.totalTokens);
+};
+
+if (chatHistory.length != 0) {
+  countHistoryTokens();
+}
+
 client.on("ready", () => {
   console.log("Logged in as " + client.user.tag);
 
@@ -271,6 +283,9 @@ client.on("messageCreate", async (msg) => {
         } else {
           chatHistory = temp;
           chat = model.startChat({ history: chatHistory });
+          if (chatHistory.length != 0) {
+            countHistoryTokens();
+          }
         }
         return;
       }
