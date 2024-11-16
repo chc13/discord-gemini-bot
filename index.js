@@ -236,6 +236,12 @@ client.on("messageCreate", async (msg) => {
         }); */
         console.log("Resetting Chat Session...");
         await msg.reply("Resetting Chat Session...");
+
+        //save old chat history in a backup json marked by the current date and time
+        readwriteJson.writeJSONFile(`chatHistory-${Date.now()}.json`, {
+          history: chatHistory,
+        });
+
         chatHistory = [];
         chat = model.startChat();
         return;
