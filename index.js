@@ -31,7 +31,7 @@ if ("AUTOLOAD_CHAT" in process.env) {
   console.log("it isnt set");
 } */
 
-//alternative to env
+//alternative to env, uses personal test apikey.js
 /* const API_KEY = require("./apikey.js");
 const ADMIN_ID = API_KEY.ADMIN_ID;
 const DISCORD_TOKEN = API_KEY.DISCORD_TOKEN;
@@ -169,6 +169,7 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", async (msg) => {
+  //feed message to apikey.js, use this for testing only
   //API_KEY.responses(msg);
 
   try {
@@ -221,7 +222,7 @@ client.on("messageCreate", async (msg) => {
             "TPM: " +
             tpmCount +
             "/" +
-            TOKENS_PER_MINUTE
+            TOKENS_PER_MINUTE,
         );
         return;
       }
@@ -262,7 +263,7 @@ client.on("messageCreate", async (msg) => {
         let minutes = Math.floor(client.uptime / 60000) % 60;
         let seconds = Math.floor(client.uptime / 1000) % 60;
         await msg.reply(
-          `__Uptime:__\n${days}d ${hours}h ${minutes}m ${seconds}s`
+          `__Uptime:__\n${days}d ${hours}h ${minutes}m ${seconds}s`,
         );
         return;
       }
@@ -327,7 +328,7 @@ client.on("messageCreate", async (msg) => {
       fetchedMessages
         .reverse()
         .forEach(
-          (msg) => (chatlog += msg.author.tag + ": " + msg.content + "\n")
+          (msg) => (chatlog += msg.author.tag + ": " + msg.content + "\n"),
         );
 
       trimmedText = chatlog;
@@ -411,8 +412,8 @@ client.on("messageCreate", async (msg) => {
         await msg.reply(
           responseTxt.substring(
             i * Number(MESSAGE_SIZE),
-            i * Number(MESSAGE_SIZE) + Number(MESSAGE_SIZE)
-          )
+            i * Number(MESSAGE_SIZE) + Number(MESSAGE_SIZE),
+          ),
         );
       }
     }
