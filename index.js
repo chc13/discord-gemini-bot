@@ -127,7 +127,7 @@ const model = genAI.getGenerativeModel({
 let chatHistory = [];
 
 if (Number(AUTOLOAD_CHAT)) {
-  console.log("Loading chat history...");
+  console.log("Loading previous chat history...");
   chatHistory = readwriteJson.readJSONFile("chatHistory.json")["history"];
   //what happens if that file doesnt exist?
   //console.log(chatHistory);
@@ -248,6 +248,28 @@ client.on("messageCreate", async (msg) => {
         return;
       }
 
+      //reboots the chat session, maintaining chat history
+      if (trimmedText === "!reboot") {
+        console.log("Rebooting Chat Session...");
+        await msg.reply("Rebooting Chat Session...");
+
+        chatHistory = [];
+        console.log("Loading previous chat history...");
+        chatHistory = readwriteJson.readJSONFile("chatHistory.json")["history"];
+        //what happens if that file doesnt exist?
+        if (chatHistory == undefined) {
+          console.log("Chat history unavailable to be loaded.");
+          chatHistory = [];
+        } else {
+          chat = model.startChat({ history: chatHistory });
+          if (chatHistory.length != 0) {
+            countHistoryTokens();
+          }
+          console.log("Chat history successfully loaded!");
+        }
+        return;
+      }
+
       //shuts down the discord bot
       if (trimmedText === "!shutdown") {
         console.log("Shutting down...");
@@ -298,7 +320,7 @@ client.on("messageCreate", async (msg) => {
       }
     }
 
-    //checks quota limits and cancels operation if theyre over the set limits
+    //checks user set quota limits and cancels operation if theyre over the set limits; does not check actual quotas set by Google
     if (rpmCount >= Number(REQUESTS_PER_MINUTE)) {
       console.log("requests exceed RPM");
       await msg.reply("CAUTION: Requests exceed RPM.");
